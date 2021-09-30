@@ -1,0 +1,40 @@
+name: Python CI
+
+on:
+   push:
+     branches: [master]
+   pull_request:
+     branches:
+       - '**'
+
+jobs:
+   run_tests:
+     name: tests
+     runs-on: ${{ matrix.os }}
+     strategy:
+       matrix:
+         os: [ubuntu-20.04]
+         python-version: ['3.8']
+         toxenv: [py38-django22, py38-django30, py38-django31, py38-django32]
+
+     steps:
+       - uses: actions/checkout@v1
+       - name: setup python
+         uses: actions/setup-python@v2
+         with:
+           python-version: ${{ matrix.python-version }}
+
+       - uses: actions/setup-node@v2
+         with:
+           node-version: ${{ matrix.node-version }}
+
+       - name: Install recquirement
+         run: pip install tox
+
+       - name: Install npm requirements
+         run: cd tests && npm i
+
+       - name: Run Tests
+         env:
+           TOXENV: ${{ matrix.toxenv }}
+         run: cd tests && tox
